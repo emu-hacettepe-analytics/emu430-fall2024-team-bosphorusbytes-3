@@ -180,7 +180,7 @@ listings %>%
   )
 ```
 
-Entire home listings command the highest prices, with a median roughly 2-3x higher than private rooms. Shared rooms are the cheapest option by a wide margin. The spread within each category is also notable — even within the same room type, prices vary significantly across districts.
+Entire home listings command the highest prices, with a median roughly 2-3x higher than private rooms. Shared rooms are the cheapest option by a wide margin. The spread within each category is also notable  even within the same room type, prices vary significantly across districts.
 
 ### 2.3 Top 15 Districts by Median Price
 
@@ -207,7 +207,7 @@ listings %>%
   )
 ```
 
-Upscale waterfront districts top the price rankings, while high-volume tourist districts like Beyoglu and Fatih offer more moderate prices despite their popularity. This suggests that listing count and listing price are driven by different factors — volume by tourist footfall, price by neighbourhood prestige.
+Upscale waterfront districts top the price rankings, while high-volume tourist districts like Beyoglu and Fatih offer more moderate prices despite their popularity. This suggests that listing count and listing price are driven by different factors  volume by tourist footfall, price by neighbourhood prestige.
 
 ### 2.4 Price vs Minimum Nights
 
@@ -359,7 +359,7 @@ listings %>%
   )
 ```
 
-Single-listing hosts show highly variable availability, with many keeping their property available for only part of the year — consistent with occasional or seasonal renting. Multi-listing hosts, by contrast, maintain near year-round availability, reinforcing the view that they operate as professional short-term rental businesses rather than casual hosts sharing their home.
+Single-listing hosts show highly variable availability, with many keeping their property available for only part of the year  consistent with occasional or seasonal renting. Multi-listing hosts, by contrast, maintain near year-round availability, reinforcing the view that they operate as professional short-term rental businesses rather than casual hosts sharing their home.
 
 ---
 
