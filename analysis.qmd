@@ -72,7 +72,7 @@ listings %>%
   )
 ```
 
-Listings cluster tightly around the Bosphorus shoreline. The historic peninsula and Beyoglu show the highest density.
+Listings cluster tightly around the Bosphorus shoreline, particularly in Beyoglu and the historic peninsula (Fatih). The Asian side shows noticeably fewer listings, reflecting lower tourist demand compared to the European side.
 
 ### 1.2 Top 15 Districts by Listing Count
 
@@ -95,6 +95,8 @@ listings %>%
     caption  = "Source: Inside Airbnb - Istanbul"
   )
 ```
+
+Beyoglu alone accounts for nearly one in five listings across the entire city. The top five districts — Beyoglu, Sisli, Fatih, Besiktas, and Kadikoy — together hold the majority of all listings, while the remaining districts share a much smaller portion. This extreme concentration suggests that Airbnb growth has been driven almost entirely by proximity to tourist attractions.
 
 ### 1.3 Choropleth Map
 
@@ -125,6 +127,8 @@ ggplot(map_data) +
     legend.title    = element_text(face = "bold")
   )
 ```
+
+The map confirms the bar chart finding: listing density drops sharply as you move away from the city centre. Many outer districts on both the European and Asian sides have near-zero listings, indicating that Airbnb has not meaningfully penetrated residential neighbourhoods far from tourist zones.
 
 ---
 
@@ -157,6 +161,8 @@ listings %>%
   )
 ```
 
+The majority of listings are priced between 500 and 5,000 TRY per night. The log-scale histogram reveals a near-normal shape, which is typical for rental price distributions. The long right tail represents luxury listings that are far above the typical price range.
+
 ### 2.2 Price by Room Type
 
 ```{r price-room, fig.height=5}
@@ -174,7 +180,7 @@ listings %>%
   )
 ```
 
-Entire homes cost roughly 2-3x the price of private rooms.
+Entire home listings command the highest prices, with a median roughly 2-3x higher than private rooms. Shared rooms are the cheapest option by a wide margin. The spread within each category is also notable — even within the same room type, prices vary significantly across districts.
 
 ### 2.3 Top 15 Districts by Median Price
 
@@ -201,6 +207,8 @@ listings %>%
   )
 ```
 
+Upscale waterfront districts top the price rankings, while high-volume tourist districts like Beyoglu and Fatih offer more moderate prices despite their popularity. This suggests that listing count and listing price are driven by different factors — volume by tourist footfall, price by neighbourhood prestige.
+
 ### 2.4 Price vs Minimum Nights
 
 ```{r price-min-nights, fig.height=5}
@@ -219,6 +227,8 @@ listings %>%
     caption  = "Source: Inside Airbnb - Istanbul"
   )
 ```
+
+Listings with a 1-night minimum are the most common and show the widest price range. As the minimum night requirement increases, the price distribution narrows and the median tends to drop slightly, likely because longer-stay listings target budget travellers or mid-term renters rather than short-stay tourists.
 
 ---
 
@@ -252,6 +262,8 @@ reviews %>%
   )
 ```
 
+The market grew steadily from 2015, peaking in mid-2019. The COVID-19 pandemic caused a near-total collapse in early 2020, with monthly reviews dropping by approximately 85%. Recovery was gradual through 2021 and accelerated in 2022 as international travel reopened. By 2023, activity had returned to pre-pandemic levels, suggesting strong underlying demand for Istanbul short-term rentals.
+
 ### 3.1 Seasonal Patterns
 
 ```{r seasonality}
@@ -278,7 +290,7 @@ reviews %>%
   theme(panel.grid.major.x = element_blank())
 ```
 
-Istanbul's Airbnb market peaks sharply in summer and troughs in January-February.
+The July-August summer peak is remarkably consistent across all years, driven by Istanbul's peak tourism season. A secondary smaller peak is visible in spring (April-May). January and February are consistently the quietest months. This predictable seasonality has important implications for host pricing strategies and city-level tourism planning.
 
 ---
 
@@ -328,6 +340,8 @@ bind_rows(host_pct, listing_pct) %>%
         panel.grid.major.x = element_blank())
 ```
 
+While single-listing hosts make up the vast majority of all hosts, they control a much smaller share of total listings compared to multi-listing operators. Hosts with 10 or more listings are a tiny fraction of all hosts but account for a disproportionately large share of supply. This pattern is consistent with the commercialisation of Airbnb seen in other major global cities.
+
 ### 4.2 Availability by Host Type
 
 ```{r availability, fig.height=5}
@@ -344,6 +358,8 @@ listings %>%
     caption  = "Source: Inside Airbnb - Istanbul"
   )
 ```
+
+Single-listing hosts show highly variable availability, with many keeping their property available for only part of the year — consistent with occasional or seasonal renting. Multi-listing hosts, by contrast, maintain near year-round availability, reinforcing the view that they operate as professional short-term rental businesses rather than casual hosts sharing their home.
 
 ---
 
@@ -390,8 +406,24 @@ tpi_data %>%
   )
 ```
 
+Beyoglu scores highest on the Tourism Pressure Index, driven by its combination of the most listings, a high entire-home ratio, and above-average prices. Fatih and Besiktas follow closely. These high-pressure districts are precisely where concerns about housing displacement and neighbourhood change are most acute. Lower-TPI districts on the city's periphery face far less pressure from short-term rental activity.
+
 ---
 
 ## Summary
 
 Istanbul's Airbnb market is spatially concentrated in a handful of tourist-heavy districts, commercially maturing through multi-listing operators, and now fully recovered from the COVID-19 shock. Central districts face the highest combined tourism pressure, with implications for housing availability and neighbourhood character.
+
+---
+
+::: {.callout-note collapse="true"}
+## AI Usage Disclosure
+
+This project utilized Claude AI (Anthropic) to assist with code generation and writing.
+All AI-generated content was reviewed and verified by the team members.
+
+**Prompt used:** *"I am an industrial engineering student working on EMU430 Data Analytics
+final project. Our team BosphorusBytes is analysing Istanbul Airbnb data. Help me create
+Quarto web pages with R code for data import, cleaning, EDA visualizations, time series
+analysis, host profiling, and a Tourism Pressure Index."*
+:::
