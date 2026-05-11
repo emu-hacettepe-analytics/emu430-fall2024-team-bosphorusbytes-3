@@ -28,15 +28,15 @@ Istanbul is one of the world's most-visited cities, and the rise of Airbnb has f
 
 ## Key Takeaways
 
-- 🗺️ **Listings are heavily concentrated in tourist cores:** Beyoğlu, Şişli, and Fatih together account for over 45% of all Istanbul listings.
+- ️ **Listings are heavily concentrated in tourist cores:** Beyoğlu, Şişli, and Fatih together account for over 45% of all Istanbul listings.
 
-- 💰 **Location and room type are the strongest price predictors:** Entire-home listings in central districts cost 2–3× more than private rooms in peripheral areas.
+-  **Location and room type are the strongest price predictors:** Entire-home listings in central districts cost 2–3× more than private rooms in peripheral areas.
 
-- 📉 **COVID-19 caused a near-total booking collapse:** Monthly review counts fell ~85% between February and May 2020, with full recovery not until mid-2022.
+-  **COVID-19 caused a near-total booking collapse:** Monthly review counts fell ~85% between February and May 2020, with full recovery not until mid-2022.
 
-- 🏠 **Professional hosts dominate supply:** The top 5% of hosts by listing count control over 30% of total listings.
+-  **Professional hosts dominate supply:** The top 5% of hosts by listing count control over 30% of total listings.
 
-- 🔤 **Guests talk about location above all else:** The words *location*, *clean*, and *walk* dominate reviews in central districts.
+-  **Guests talk about location above all else:** The words *location*, *clean*, and *walk* dominate reviews in central districts.
 
 ---
 
