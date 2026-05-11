@@ -13,8 +13,8 @@ sidebar: false
 |------|-----------|
 | [Mevlüt Görgülü](https://github.com/mgorgulu21) | 2210469027 |
 | [Sıla Nur Güney](https://github.com/) | 2210469060 |
-| [Aleyna Asiye Koç](https://github.com/) | 2210469076 |
-| [Melike Ebrar Şahinbay](https://github.com/) | 2210469077 |
+| [Aleyna Asiye Koç](https://github.com/asiyekoc) | 2210469076 |
+| [Melike Ebrar Şahinbay](https://github.com/melikesahinbay) | 2210469077 |
 
 **GitHub:** [emu-hacettepe-analytics/BosphorusBytes](https://github.com/emu-hacettepe-analytics/emu430-fall2024-team-bosphorusbytes-3)
 

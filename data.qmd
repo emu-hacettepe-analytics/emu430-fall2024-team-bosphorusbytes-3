@@ -2,4 +2,144 @@
 title: "Data"
 ---
 
-Data source: xxx
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE, echo = TRUE)
+```
+
+## About the Dataset
+
+Our primary data source is the **Istanbul Airbnb dataset** from [Inside Airbnb](http://insideairbnb.com/get-the-data). We work with three files:
+
+| File | Approx. Rows | Key Columns |
+|------|-------------|-------------|
+| `listings.csv` | ~20,000 | id, name, neighbourhood, room_type, price, host_id, reviews |
+| `reviews.csv` | ~100,000+ | listing_id, date, comments |
+| `calendar.csv.gz` | millions | listing_id, date, available, price |
+
+We also use a **GeoJSON file** of Istanbul neighbourhood boundaries for maps.
+
+### Why This Dataset?
+
+Istanbul attracts over 20 million visitors yearly. Airbnb has grown substantially but its impact on residents is underexplored. This dataset lets us track geographic spread, pricing dynamics, COVID-19 effects, and host commercialisation.
+
+---
+
+## Data Import
+
+```{r load-libraries}
+library(tidyverse)
+library(janitor)
+library(lubridate)
+library(scales)
+library(sf)
+library(knitr)
+library(kableExtra)
+```
+
+```{r import-data}
+listings_raw       <- read_csv("data/listings.csv",    show_col_types = FALSE)
+reviews_raw        <- read_csv("data/reviews.csv",     show_col_types = FALSE)
+calendar_raw       <- read_csv("data/calendar.csv.gz", n_max = 500000, show_col_types = FALSE)
+neighbourhoods_geo <- st_read("data/neighbourhoods.geojson", quiet = TRUE)
+```
+
+---
+
+## Data Preprocessing
+
+### Listings
+
+The listings file contains 18 columns. We select the relevant ones and apply these steps:
+
+1. **Price parsing:** Convert `price` to numeric.
+2. **Outlier removal:** Drop listings with price below $5 or above $2,000.
+3. **NA handling:** Remove rows missing `price`, `neighbourhood`, or `room_type`.
+4. **Date parsing:** Convert `last_review` to date format.
+
+```{r clean-listings}
+listings <- listings_raw %>%
+  clean_names() %>%
+  select(
+    id, name, host_id, host_name,
+    neighbourhood_group, neighbourhood,
+    latitude, longitude,
+    room_type, price, minimum_nights,
+    number_of_reviews, last_review,
+    reviews_per_month,
+    calculated_host_listings_count,
+    availability_365
+  ) %>%
+  mutate(
+    price       = as.numeric(price),
+    last_review = ymd(last_review)
+  ) %>%
+  filter(
+    !is.na(price),
+    !is.na(neighbourhood),
+    !is.na(room_type),
+    price >= 5,
+    price <= 2000
+  )
+
+cat("Rows after cleaning:", nrow(listings))
+```
+
+### Reviews
+
+```{r clean-reviews}
+reviews <- reviews_raw %>%
+  clean_names() %>%
+  mutate(
+    date  = ymd(date),
+    year  = year(date),
+    month = month(date, label = TRUE)
+  ) %>%
+  filter(!is.na(date))
+
+cat("Rows after cleaning:", nrow(reviews))
+```
+
+### Calendar
+
+```{r clean-calendar}
+calendar <- calendar_raw %>%
+  clean_names() %>%
+  mutate(
+    date      = ymd(date),
+    price     = as.numeric(str_replace_all(price, "[$,]", "")),
+    available = available == "t"
+  ) %>%
+  filter(!is.na(date))
+
+cat("Rows after cleaning:", nrow(calendar))
+```
+
+---
+
+## Final Dataset Overview
+
+```{r dataset-summary}
+tibble(
+  Dataset = c("listings", "reviews", "calendar"),
+  Rows    = c(nrow(listings), nrow(reviews), nrow(calendar)),
+  Columns = c(ncol(listings), ncol(reviews), ncol(calendar))
+) %>%
+  kable(caption = "Cleaned dataset dimensions",
+        format.args = list(big.mark = ",")) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+```
+
+```{r glimpse}
+glimpse(listings)
+```
+
+---
+
+## Save Final Dataset
+
+```{r save-rdata}
+save(listings, reviews, calendar, neighbourhoods_geo,
+     file = "data/istanbul_airbnb.RData")
+```
+
+Download: [istanbul_airbnb.RData](data/istanbul_airbnb.RData)
