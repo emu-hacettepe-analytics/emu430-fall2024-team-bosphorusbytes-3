@@ -5,7 +5,8 @@ title: "Analysis"
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
   warning = FALSE, message = FALSE, echo = TRUE,
-  fig.align = "center", fig.width = 8, fig.height = 5
+  fig.align = "center", fig.width = 9, fig.height = 6,
+  dpi = 150
 )
 ```
 
@@ -20,6 +21,27 @@ library(viridis)
 library(gridExtra)
 
 load("data/istanbul_airbnb.RData")
+
+theme_set(
+  theme_minimal(base_size = 13) +
+  theme(
+    plot.title       = element_text(face = "bold", size = 15,
+                                    margin = margin(b = 6)),
+    plot.subtitle    = element_text(colour = "grey40", size = 11,
+                                    margin = margin(b = 10)),
+    plot.caption     = element_text(colour = "grey55", size = 9,
+                                    margin = margin(t = 8)),
+    plot.background  = element_rect(fill = "white", colour = NA),
+    panel.grid.minor = element_blank(),
+    panel.grid.major = element_line(colour = "grey92"),
+    axis.title       = element_text(size = 11, colour = "grey30"),
+    axis.text        = element_text(size = 10, colour = "grey30"),
+    legend.title     = element_text(face = "bold", size = 10),
+    legend.text      = element_text(size = 9)
+  )
+)
+
+COLORS <- c("#2196F3", "#E91E63", "#4CAF50", "#FF9800")
 ```
 
 ## Key Takeaways
@@ -39,21 +61,18 @@ load("data/istanbul_airbnb.RData")
 ```{r map}
 listings %>%
   ggplot(aes(x = longitude, y = latitude, colour = room_type)) +
-  geom_point(alpha = 0.4, size = 0.8) +
-  scale_colour_manual(
-    values = c("#e63946", "#457b9d", "#2a9d8f", "#e9c46a"),
-    name   = "Room Type"
-  ) +
+  geom_point(alpha = 0.35, size = 0.9) +
+  scale_colour_manual(values = COLORS, name = "Room Type") +
+  guides(colour = guide_legend(override.aes = list(size = 4, alpha = 1))) +
   labs(
-    title   = "Geographic Distribution of Istanbul Airbnb Listings",
+    title    = "Geographic Distribution of Istanbul Airbnb Listings",
+    subtitle = "Each dot represents one listing, coloured by room type",
     x = "Longitude", y = "Latitude",
-    caption = "Source: Inside Airbnb - Istanbul"
-  ) +
-  theme_minimal(base_size = 12) +
-  theme(plot.title = element_text(face = "bold"))
+    caption  = "Source: Inside Airbnb - Istanbul"
+  )
 ```
 
-Listings cluster around the Bosphorus shoreline, with the densest concentration in Beyoglu and the historic peninsula.
+Listings cluster tightly around the Bosphorus shoreline. The historic peninsula and Beyoglu show the highest density.
 
 ### 1.2 Top 15 Districts by Listing Count
 
@@ -62,123 +81,143 @@ listings %>%
   count(neighbourhood, sort = TRUE) %>%
   slice_head(n = 15) %>%
   mutate(neighbourhood = fct_reorder(neighbourhood, n)) %>%
-  ggplot(aes(x = n, y = neighbourhood, fill = n)) +
-  geom_col(show.legend = FALSE) +
-  scale_fill_viridis_c(option = "C") +
-  scale_x_continuous(labels = comma) +
+  ggplot(aes(x = n, y = neighbourhood)) +
+  geom_col(aes(fill = n), show.legend = FALSE, width = 0.7) +
+  geom_text(aes(label = comma(n)), hjust = -0.15, size = 3.5,
+            colour = "grey30") +
+  scale_fill_viridis_c(option = "C", begin = 0.2) +
+  scale_x_continuous(labels = comma,
+                     expand = expansion(mult = c(0, 0.15))) +
   labs(
-    title   = "Top 15 Districts by Listing Count",
+    title    = "Top 15 Districts by Airbnb Listing Count",
+    subtitle = "Beyoglu alone holds nearly 1 in 5 listings citywide",
     x = "Number of Listings", y = NULL,
-    caption = "Source: Inside Airbnb - Istanbul"
-  ) +
-  theme_minimal(base_size = 12) +
-  theme(plot.title = element_text(face = "bold"))
+    caption  = "Source: Inside Airbnb - Istanbul"
+  )
 ```
-
-Beyoglu dominates with the highest listing count, consistent with its status as Istanbul's main tourist hub.
 
 ### 1.3 Choropleth Map
 
-```{r choropleth}
+```{r choropleth, fig.height=7}
 listing_counts <- listings %>%
   count(neighbourhood, name = "n_listings")
 
 map_data <- neighbourhoods_geo %>%
-  left_join(listing_counts, by = c("neighbourhood" = "neighbourhood"))
+  left_join(listing_counts, by = "neighbourhood")
 
 ggplot(map_data) +
-  geom_sf(aes(fill = n_listings), colour = "white", linewidth = 0.3) +
-  scale_fill_viridis_c(option = "C", na.value = "grey90",
-                       labels = comma, name = "Listings") +
+  geom_sf(aes(fill = n_listings), colour = "white", linewidth = 0.4) +
+  scale_fill_viridis_c(
+    option   = "C", na.value = "grey90",
+    labels   = comma, name = "Listings",
+    guide    = guide_colourbar(barwidth = 10, barheight = 0.8,
+                               title.position = "top")
+  ) +
   labs(
     title   = "Listing Density Across Istanbul Districts",
     caption = "Source: Inside Airbnb - Istanbul"
   ) +
-  theme_void(base_size = 12) +
-  theme(plot.title = element_text(face = "bold"))
+  theme_void(base_size = 13) +
+  theme(
+    plot.title      = element_text(face = "bold", size = 15,
+                                   margin = margin(b = 8)),
+    legend.position = "bottom",
+    legend.title    = element_text(face = "bold")
+  )
 ```
 
 ---
 
 ## 2. Price Analysis
 
+All prices are in **Turkish Lira (TRY)**.
+
 ### 2.1 Price Distribution
 
 ```{r price-dist}
+med_price <- median(listings$price, na.rm = TRUE)
+
 listings %>%
   ggplot(aes(x = price)) +
-  geom_histogram(bins = 60, fill = "#457b9d", colour = "white") +
-  scale_x_log10(labels = dollar) +
+  geom_histogram(bins = 55, fill = "#2196F3", colour = "white",
+                 alpha = 0.85) +
+  geom_vline(xintercept = med_price, linetype = "dashed",
+             colour = "#E91E63", linewidth = 0.9) +
+  annotate("text", x = med_price * 1.8, y = Inf,
+           label = paste0("Median: ", comma(round(med_price)), " TRY"),
+           colour = "#E91E63", vjust = 2, fontface = "bold", size = 4) +
+  scale_x_log10(labels = comma,
+                breaks = c(100, 500, 1000, 2500, 5000, 15000, 50000)) +
   scale_y_continuous(labels = comma) +
   labs(
-    title   = "Distribution of Nightly Prices (log scale)",
-    x = "Price per Night (USD)", y = "Count",
-    caption = "Source: Inside Airbnb - Istanbul"
-  ) +
-  theme_minimal(base_size = 12) +
-  theme(plot.title = element_text(face = "bold"))
+    title    = "Distribution of Nightly Prices",
+    subtitle = "Log scale — prices in Turkish Lira (TRY)",
+    x = "Price per Night (TRY, log scale)", y = "Number of Listings",
+    caption  = "Source: Inside Airbnb - Istanbul"
+  )
 ```
-
-The distribution is right-skewed with a median around $20-50 per night.
 
 ### 2.2 Price by Room Type
 
-```{r price-room}
+```{r price-room, fig.height=5}
 listings %>%
   ggplot(aes(x = room_type, y = price, fill = room_type)) +
   geom_boxplot(outlier.alpha = 0.2, show.legend = FALSE) +
-  scale_y_log10(labels = dollar) +
-  scale_fill_manual(values = c("#e63946","#457b9d","#2a9d8f","#e9c46a")) +
+  scale_y_log10(labels = comma,
+                breaks = c(100, 500, 1500, 5000, 15000, 50000)) +
+  scale_fill_manual(values = COLORS) +
   labs(
-    title   = "Nightly Price by Room Type",
-    x = NULL, y = "Price (USD, log scale)",
-    caption = "Source: Inside Airbnb - Istanbul"
-  ) +
-  theme_minimal(base_size = 12) +
-  theme(plot.title = element_text(face = "bold"))
+    title    = "Nightly Price Distribution by Room Type",
+    subtitle = "Prices in Turkish Lira (TRY)",
+    x = NULL, y = "Price per Night (TRY, log scale)",
+    caption  = "Source: Inside Airbnb - Istanbul"
+  )
 ```
 
-Entire homes cost roughly 2x the price of private rooms.
+Entire homes cost roughly 2-3x the price of private rooms.
 
 ### 2.3 Top 15 Districts by Median Price
 
 ```{r price-neighbourhood}
 listings %>%
   group_by(neighbourhood) %>%
-  summarise(median_price = median(price, na.rm = TRUE), n = n()) %>%
+  summarise(median_price = median(price, na.rm = TRUE),
+            n = n(), .groups = "drop") %>%
   filter(n >= 30) %>%
   slice_max(median_price, n = 15) %>%
   mutate(neighbourhood = fct_reorder(neighbourhood, median_price)) %>%
-  ggplot(aes(x = median_price, y = neighbourhood, fill = median_price)) +
-  geom_col(show.legend = FALSE) +
-  scale_fill_viridis_c(option = "B") +
-  scale_x_continuous(labels = dollar) +
+  ggplot(aes(x = median_price, y = neighbourhood)) +
+  geom_col(aes(fill = median_price), show.legend = FALSE, width = 0.7) +
+  geom_text(aes(label = comma(round(median_price))),
+            hjust = -0.15, size = 3.5, colour = "grey30") +
+  scale_fill_viridis_c(option = "B", begin = 0.2) +
+  scale_x_continuous(labels = comma,
+                     expand = expansion(mult = c(0, 0.2))) +
   labs(
-    title   = "Top 15 Districts by Median Nightly Price",
-    x = "Median Price (USD)", y = NULL,
-    caption = "Source: Inside Airbnb - Istanbul (districts with 30+ listings)"
-  ) +
-  theme_minimal(base_size = 12) +
-  theme(plot.title = element_text(face = "bold"))
+    title    = "Top 15 Districts by Median Nightly Price",
+    subtitle = "Districts with at least 30 listings — prices in TRY",
+    x = "Median Nightly Price (TRY)", y = NULL,
+    caption  = "Source: Inside Airbnb - Istanbul"
+  )
 ```
 
 ### 2.4 Price vs Minimum Nights
 
-```{r price-min-nights}
+```{r price-min-nights, fig.height=5}
 listings %>%
-  filter(minimum_nights <= 30) %>%
-  ggplot(aes(x = factor(minimum_nights), y = price)) +
-  geom_boxplot(fill = "#457b9d", outlier.alpha = 0.1,
-               show.legend = FALSE) +
-  scale_y_log10(labels = dollar) +
+  filter(minimum_nights <= 14) %>%
+  mutate(minimum_nights = factor(minimum_nights)) %>%
+  ggplot(aes(x = minimum_nights, y = price)) +
+  geom_boxplot(fill = "#2196F3", alpha = 0.7,
+               outlier.shape = NA, colour = "grey20") +
+  coord_cartesian(ylim = c(0, 15000)) +
+  scale_y_continuous(labels = comma) +
   labs(
-    title   = "Price Distribution by Minimum Night Requirement",
-    subtitle = "Listings requiring longer stays tend to have lower nightly prices",
-    x = "Minimum Nights", y = "Price (USD, log scale)",
-    caption = "Source: Inside Airbnb - Istanbul"
-  ) +
-  theme_minimal(base_size = 12) +
-  theme(plot.title = element_text(face = "bold"))
+    title    = "Price by Minimum Night Requirement",
+    subtitle = "Listings requiring longer stays tend to price lower per night",
+    x = "Minimum Nights Required", y = "Price per Night (TRY)",
+    caption  = "Source: Inside Airbnb - Istanbul"
+  )
 ```
 
 ---
@@ -187,29 +226,30 @@ listings %>%
 
 Reviews are a reliable proxy for bookings since a review can only be left after a completed stay.
 
-```{r timeseries}
+```{r timeseries, fig.height=5}
 reviews %>%
   filter(year >= 2015, year <= 2024) %>%
   count(year_month = floor_date(date, "month")) %>%
   ggplot(aes(x = year_month, y = n)) +
-  geom_line(colour = "#457b9d", linewidth = 1) +
-  geom_area(fill = "#457b9d", alpha = 0.2) +
   annotate("rect",
-           xmin = as.Date("2020-03-01"), xmax = as.Date("2021-06-01"),
-           ymin = -Inf, ymax = Inf, alpha = 0.15, fill = "#e63946") +
-  annotate("text", x = as.Date("2020-09-01"), y = 10000,
-           label = "COVID-19", colour = "#e63946",
-           fontface = "bold", size = 3.5) +
+           xmin = as.Date("2020-03-01"),
+           xmax = as.Date("2021-06-01"),
+           ymin = -Inf, ymax = Inf,
+           alpha = 0.12, fill = "#E91E63") +
+  geom_area(fill = "#2196F3", alpha = 0.25) +
+  geom_line(colour = "#2196F3", linewidth = 1.1) +
+  annotate("label", x = as.Date("2020-09-01"), y = 25000,
+           label = "COVID-19\nLockdowns", colour = "#E91E63",
+           fill = "white", fontface = "bold", size = 3.5,
+           label.size = 0.3) +
   scale_x_date(date_breaks = "1 year", date_labels = "%Y") +
   scale_y_continuous(labels = comma) +
   labs(
-    title    = "Monthly Review Count (2015-2024)",
-    subtitle = "~85% collapse in spring 2020; full recovery by mid-2022",
-    x = NULL, y = "Reviews",
-    caption = "Source: Inside Airbnb - Istanbul"
-  ) +
-  theme_minimal(base_size = 12) +
-  theme(plot.title = element_text(face = "bold"))
+    title    = "Monthly Booking Activity (2015-2024)",
+    subtitle = "Measured via review counts - proxy for completed stays",
+    x = NULL, y = "Number of Reviews",
+    caption  = "Source: Inside Airbnb - Istanbul"
+  )
 ```
 
 ### 3.1 Seasonal Patterns
@@ -220,19 +260,22 @@ reviews %>%
   count(year, month_num = month(date)) %>%
   mutate(year = factor(year)) %>%
   ggplot(aes(x = month_num, y = n, colour = year, group = year)) +
-  geom_line(linewidth = 1) +
-  geom_point(size = 2) +
+  geom_line(linewidth = 1.2) +
+  geom_point(size = 2.5) +
   scale_x_continuous(breaks = 1:12, labels = month.abb) +
   scale_y_continuous(labels = comma) +
-  scale_colour_viridis_d(option = "D") +
-  labs(
-    title   = "Seasonal Patterns (Selected Years)",
-    subtitle = "July-August peak is consistent across all years",
-    x = NULL, y = "Reviews", colour = "Year",
-    caption = "Source: Inside Airbnb - Istanbul"
+  scale_colour_manual(
+    values = c("2018" = "#90CAF9", "2019" = "#2196F3",
+               "2022" = "#FFB74D", "2023" = "#E65100"),
+    name = "Year"
   ) +
-  theme_minimal(base_size = 12) +
-  theme(plot.title = element_text(face = "bold"))
+  labs(
+    title    = "Seasonal Review Patterns by Year",
+    subtitle = "July-August peak is consistent; 2020-2021 omitted due to COVID-19",
+    x = NULL, y = "Number of Reviews",
+    caption  = "Source: Inside Airbnb - Istanbul"
+  ) +
+  theme(panel.grid.major.x = element_blank())
 ```
 
 Istanbul's Airbnb market peaks sharply in summer and troughs in January-February.
@@ -243,10 +286,10 @@ Istanbul's Airbnb market peaks sharply in summer and troughs in January-February
 
 ### 4.1 Single vs Multi-Listing Hosts
 
-```{r host-profile}
+```{r host-profile, fig.height=5}
 host_summary <- listings %>%
   group_by(host_id) %>%
-  summarise(n_listings = n_distinct(id)) %>%
+  summarise(n_listings = n_distinct(id), .groups = "drop") %>%
   mutate(host_type = case_when(
     n_listings == 1  ~ "1 listing",
     n_listings <= 4  ~ "2-4 listings",
@@ -257,63 +300,60 @@ host_summary <- listings %>%
                      levels = c("1 listing", "2-4 listings",
                                 "5-9 listings", "10+ listings")))
 
-p1 <- host_summary %>%
+host_pct <- host_summary %>%
   count(host_type) %>%
-  mutate(pct = n / sum(n)) %>%
-  ggplot(aes(x = host_type, y = pct, fill = host_type)) +
-  geom_col(show.legend = FALSE) +
-  geom_text(aes(label = percent(pct, accuracy = 0.1)),
-            vjust = -0.4, size = 3) +
-  scale_y_continuous(labels = percent, limits = c(0, 0.85)) +
-  scale_fill_viridis_d(option = "C") +
-  labs(title = "Share of Hosts", x = NULL, y = NULL) +
-  theme_minimal(base_size = 10)
+  mutate(type = "Share of Hosts", pct = n / sum(n))
 
-p2 <- listings %>%
+listing_pct <- listings %>%
   left_join(host_summary, by = "host_id") %>%
   count(host_type) %>%
-  mutate(pct = n / sum(n)) %>%
-  ggplot(aes(x = host_type, y = pct, fill = host_type)) +
-  geom_col(show.legend = FALSE) +
+  mutate(type = "Share of Listings", pct = n / sum(n))
+
+bind_rows(host_pct, listing_pct) %>%
+  ggplot(aes(x = host_type, y = pct, fill = type)) +
+  geom_col(position = "dodge", width = 0.65, alpha = 0.9) +
   geom_text(aes(label = percent(pct, accuracy = 0.1)),
-            vjust = -0.4, size = 3) +
-  scale_y_continuous(labels = percent, limits = c(0, 0.6)) +
-  scale_fill_viridis_d(option = "C") +
-  labs(title = "Share of Listings Controlled", x = NULL, y = NULL) +
-  theme_minimal(base_size = 10)
-
-grid.arrange(p1, p2, ncol = 2)
+            position = position_dodge(width = 0.65),
+            vjust = -0.5, size = 3.2, colour = "grey25") +
+  scale_y_continuous(labels = percent, limits = c(0, 0.9),
+                     expand = expansion(mult = c(0, 0.05))) +
+  scale_fill_manual(values = c("#2196F3", "#E91E63"), name = NULL) +
+  labs(
+    title    = "Host Type: Share of Hosts vs Share of Listings",
+    subtitle = "Multi-listing hosts control far more listings than their numbers suggest",
+    x = NULL, y = NULL,
+    caption  = "Source: Inside Airbnb - Istanbul"
+  ) +
+  theme(legend.position = "top",
+        panel.grid.major.x = element_blank())
 ```
-
-Single-listing hosts are the majority, but multi-listing operators control a disproportionate share of supply.
 
 ### 4.2 Availability by Host Type
 
-```{r availability}
+```{r availability, fig.height=5}
 listings %>%
   left_join(host_summary, by = "host_id") %>%
   ggplot(aes(x = host_type, y = availability_365, fill = host_type)) +
   geom_boxplot(outlier.alpha = 0.2, show.legend = FALSE) +
-  scale_fill_viridis_d(option = "C") +
+  scale_fill_viridis_d(option = "C", begin = 0.1) +
+  scale_y_continuous(breaks = seq(0, 365, 60)) +
   labs(
-    title   = "Annual Availability by Host Type",
-    subtitle = "Professional hosts keep listings available significantly longer",
-    x = NULL, y = "Days Available per Year",
-    caption = "Source: Inside Airbnb - Istanbul"
-  ) +
-  theme_minimal(base_size = 12) +
-  theme(plot.title = element_text(face = "bold"))
+    title    = "Annual Availability Days by Host Type",
+    subtitle = "Professional hosts list year-round; casual hosts are more selective",
+    x = NULL, y = "Days Available per Year (out of 365)",
+    caption  = "Source: Inside Airbnb - Istanbul"
+  )
 ```
 
 ---
 
 ## 5. Tourism Pressure Index
 
-We combine three normalised components into an equal-weight **Tourism Pressure Index (TPI)**:
+We combine three min-max normalised components into an equal-weight **Tourism Pressure Index (TPI)** per district:
 
-1. **Listing density** — share of city-wide listings per district
-2. **Entire-home ratio** — share of listings that are entire homes
-3. **Price level** — median nightly price
+1. **Listing density** - share of city-wide listings
+2. **Entire-home ratio** - share of listings that are entire homes
+3. **Price level** - median nightly price
 
 ```{r tpi}
 tpi_data <- listings %>%
@@ -321,7 +361,8 @@ tpi_data <- listings %>%
   summarise(
     n_listings   = n(),
     entire_ratio = mean(room_type == "Entire home/apt", na.rm = TRUE),
-    median_price = median(price, na.rm = TRUE)
+    median_price = median(price, na.rm = TRUE),
+    .groups = "drop"
   ) %>%
   filter(n_listings >= 20) %>%
   mutate(
@@ -334,22 +375,23 @@ tpi_data <- listings %>%
 tpi_data %>%
   slice_max(TPI, n = 15) %>%
   mutate(neighbourhood = fct_reorder(neighbourhood, TPI)) %>%
-  ggplot(aes(x = TPI, y = neighbourhood, fill = TPI)) +
-  geom_col(show.legend = FALSE) +
-  scale_fill_viridis_c(option = "A", direction = -1) +
+  ggplot(aes(x = TPI, y = neighbourhood)) +
+  geom_col(aes(fill = TPI), show.legend = FALSE, width = 0.7) +
+  geom_text(aes(label = number(TPI, accuracy = 0.01)),
+            hjust = -0.15, size = 3.5, colour = "grey30") +
+  scale_fill_viridis_c(option = "A", direction = -1, begin = 0.1) +
+  scale_x_continuous(limits = c(0, 1.15),
+                     expand = expansion(mult = c(0, 0))) +
   labs(
-    title   = "Tourism Pressure Index - Top 15 Districts",
-    subtitle = "Equal-weight: listing density + entire-home ratio + price level",
-    x = "TPI (0-1)", y = NULL,
-    caption = "Source: Inside Airbnb - Istanbul"
-  ) +
-  theme_minimal(base_size = 12) +
-  theme(plot.title = element_text(face = "bold"))
+    title    = "Tourism Pressure Index - Top 15 Istanbul Districts",
+    subtitle = "Combines listing density, entire-home ratio, and price level (0-1 scale)",
+    x = "Tourism Pressure Index", y = NULL,
+    caption  = "Source: Inside Airbnb - Istanbul"
+  )
 ```
 
 ---
 
 ## Summary
 
-Istanbul's Airbnb market is spatially concentrated, commercially maturing, and recovering strongly after COVID-19. Central tourist districts face the highest tourism pressure, while multi-listing hosts are capturing a growing share of supply.
-
+Istanbul's Airbnb market is spatially concentrated in a handful of tourist-heavy districts, commercially maturing through multi-listing operators, and now fully recovered from the COVID-19 shock. Central districts face the highest combined tourism pressure, with implications for housing availability and neighbourhood character.

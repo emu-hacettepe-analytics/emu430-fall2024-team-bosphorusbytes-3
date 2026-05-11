@@ -394,7 +394,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tr class="even">
 <td><code>reviews.csv</code></td>
 <td>~100,000+</td>
-<td>listing_id, date, comments</td>
+<td>listing_id, date</td>
 </tr>
 <tr class="odd">
 <td><code>calendar.csv.gz</code></td>
@@ -429,8 +429,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>listings_raw       <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"data/listings.csv"</span>,    <span class="at">show_col_types =</span> <span class="cn">FALSE</span>)</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>reviews_raw        <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"data/reviews.csv"</span>,     <span class="at">show_col_types =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>calendar_raw       <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"data/calendar.csv.gz"</span>, <span class="at">n_max =</span> <span class="dv">500000</span>, <span class="at">show_col_types =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>neighbourhoods_geo <span class="ot">&lt;-</span> <span class="fu">st_read</span>(<span class="st">"data/neighbourhoods.geojson"</span>, <span class="at">quiet =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>calendar_raw       <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"data/calendar.csv.gz"</span>, <span class="at">n_max =</span> <span class="dv">500000</span>,</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>                                <span class="at">show_col_types =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>neighbourhoods_geo <span class="ot">&lt;-</span> <span class="fu">st_read</span>(<span class="st">"data/neighbourhoods.geojson"</span>, <span class="at">quiet =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <hr>
@@ -441,8 +442,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h3 class="anchored" data-anchor-id="listings">Listings</h3>
 <p>The listings file contains 18 columns. We select the relevant ones and apply these steps:</p>
 <ol type="1">
-<li><strong>Price parsing:</strong> Convert <code>price</code> to numeric.</li>
-<li><strong>Outlier removal:</strong> Drop listings with price below $5 or above $2,000.</li>
+<li><strong>Price parsing:</strong> Convert <code>price</code> to numeric (values are in Turkish Lira, TRY).</li>
+<li><strong>Outlier removal:</strong> Drop listings with price below 50 TRY or above 100,000 TRY.</li>
 <li><strong>NA handling:</strong> Remove rows missing <code>price</code>, <code>neighbourhood</code>, or <code>room_type</code>.</li>
 <li><strong>Date parsing:</strong> Convert <code>last_review</code> to date format.</li>
 </ol>
@@ -469,14 +470,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>    <span class="sc">!</span><span class="fu">is.na</span>(price),</span>
 <span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>    <span class="sc">!</span><span class="fu">is.na</span>(neighbourhood),</span>
 <span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>    <span class="sc">!</span><span class="fu">is.na</span>(room_type),</span>
-<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>    price <span class="sc">&gt;=</span> <span class="dv">5</span>,</span>
-<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>    price <span class="sc">&lt;=</span> <span class="dv">2000</span></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>    price <span class="sc">&gt;=</span> <span class="dv">50</span>,</span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>    price <span class="sc">&lt;=</span> <span class="dv">100000</span></span>
 <span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>  )</span>
 <span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Rows after cleaning:"</span>, <span class="fu">nrow</span>(listings))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>Rows after cleaning: 8905</code></pre>
+<pre><code>Rows after cleaning: 25206</code></pre>
 </div>
 </div>
 </section>
@@ -551,7 +552,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tbody>
 <tr class="odd">
 <td style="text-align: left;">listings</td>
-<td style="text-align: right;">8,905</td>
+<td style="text-align: right;">25,206</td>
 <td style="text-align: right;">16</td>
 </tr>
 <tr class="even">
@@ -574,24 +575,24 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(listings)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>Rows: 8,905
+<pre><code>Rows: 25,206
 Columns: 16
-$ id                             &lt;dbl&gt; 1.342082e+18, 1.342517e+18, 1.342688e+1~
-$ name                           &lt;chr&gt; "Blue standart 7", "Geni&lt;U+015F&gt; bir oda", "Ye~
-$ host_id                        &lt;dbl&gt; 304448264, 211277594, 260948258, 505772~
-$ host_name                      &lt;chr&gt; "Harun &amp; Emre", "Eda", "Soykan", "Sena"~
+$ id                             &lt;dbl&gt; 1.342043e+18, 1.342082e+18, 1.342211e+1~
+$ name                           &lt;chr&gt; "&lt;U+041E&gt;&lt;U+0442&gt;&lt;U+0434&gt;&lt;U+0435&gt;&lt;U+043B&gt;&lt;U+044C&gt;&lt;U+043D&gt;&lt;U+0430&gt;&lt;U+044F&gt; &lt;U+043A&gt;&lt;U+0432&gt;&lt;U+0430&gt;&lt;U+0440&gt;&lt;U+0442&gt;&lt;U+0438&gt;&lt;U+0440&gt;&lt;U+0430&gt; &lt;U+043D&gt;&lt;U+0430&gt; &lt;U+0424&gt;&lt;U+0430&gt;&lt;U+0442&gt;&lt;U+0438&gt;&lt;U+0445&gt;(&lt;U+0411&gt;&lt;U+0430&gt;&lt;U+043B&gt;&lt;U+0430&gt;&lt;U+0442&gt;).", ~
+$ host_id                        &lt;dbl&gt; 444141348, 304448264, 380165223, 211277~
+$ host_name                      &lt;chr&gt; "Diana", "Harun &amp; Emre", "Merve", "Eda"~
 $ neighbourhood_group            &lt;lgl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,~
-$ neighbourhood                  &lt;chr&gt; "Beyoglu", "Sisli", "Kadikoy", "Beyoglu~
-$ latitude                       &lt;dbl&gt; 41.03846, 41.05517, 40.98470, 41.03420,~
-$ longitude                      &lt;dbl&gt; 28.98350, 28.98833, 29.03187, 28.97331,~
-$ room_type                      &lt;chr&gt; "Private room", "Private room", "Privat~
-$ price                          &lt;dbl&gt; 1101, 1860, 950, 943, 976, 830, 879, 14~
-$ minimum_nights                 &lt;dbl&gt; 7, 1, 100, 30, 30, 30, 30, 100, 100, 10~
-$ number_of_reviews              &lt;dbl&gt; 4, 2, 0, 0, 0, 0, 0, 1, 0, 0, 0, 10, 0,~
-$ last_review                    &lt;date&gt; 2025-09-02, 2025-09-08, NA, NA, NA, NA~
-$ reviews_per_month              &lt;dbl&gt; 0.67, 1.13, NA, NA, NA, NA, NA, 0.20, N~
-$ calculated_host_listings_count &lt;dbl&gt; 7, 5, 1, 5, 5, 5, 5, 3, 7, 1, 7, 13, 4,~
-$ availability_365               &lt;dbl&gt; 328, 364, 365, 365, 365, 365, 365, 365,~</code></pre>
+$ neighbourhood                  &lt;chr&gt; "Fatih", "Beyoglu", "Beyoglu", "Sisli",~
+$ latitude                       &lt;dbl&gt; 41.03110, 41.03846, 41.03428, 41.05474,~
+$ longitude                      &lt;dbl&gt; 28.94588, 28.98350, 28.98130, 28.98906,~
+$ room_type                      &lt;chr&gt; "Entire home/apt", "Private room", "Ent~
+$ price                          &lt;dbl&gt; 2290, 1101, 3430, 3178, 1860, 950, 3063~
+$ minimum_nights                 &lt;dbl&gt; 5, 7, 2, 100, 1, 100, 1, 5, 2, 30, 30, ~
+$ number_of_reviews              &lt;dbl&gt; 4, 4, 26, 1, 2, 0, 41, 0, 19, 0, 0, 0, ~
+$ last_review                    &lt;date&gt; 2025-09-19, 2025-09-02, 2025-08-19, 20~
+$ reviews_per_month              &lt;dbl&gt; 0.58, 0.67, 3.44, 0.17, 1.13, NA, 5.10,~
+$ calculated_host_listings_count &lt;dbl&gt; 2, 7, 13, 5, 5, 1, 54, 45, 1, 5, 5, 5, ~
+$ availability_365               &lt;dbl&gt; 180, 328, 327, 364, 364, 365, 108, 365,~</code></pre>
 </div>
 </div>
 <hr>

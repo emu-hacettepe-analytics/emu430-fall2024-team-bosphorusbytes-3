@@ -13,7 +13,7 @@ Our primary data source is the **Istanbul Airbnb dataset** from [Inside Airbnb](
 | File | Approx. Rows | Key Columns |
 |------|-------------|-------------|
 | `listings.csv` | ~20,000 | id, name, neighbourhood, room_type, price, host_id, reviews |
-| `reviews.csv` | ~100,000+ | listing_id, date, comments |
+| `reviews.csv` | ~100,000+ | listing_id, date |
 | `calendar.csv.gz` | millions | listing_id, date, available, price |
 
 We also use a **GeoJSON file** of Istanbul neighbourhood boundaries for maps.
@@ -39,7 +39,8 @@ library(kableExtra)
 ```{r import-data}
 listings_raw       <- read_csv("data/listings.csv",    show_col_types = FALSE)
 reviews_raw        <- read_csv("data/reviews.csv",     show_col_types = FALSE)
-calendar_raw       <- read_csv("data/calendar.csv.gz", n_max = 500000, show_col_types = FALSE)
+calendar_raw       <- read_csv("data/calendar.csv.gz", n_max = 500000,
+                                show_col_types = FALSE)
 neighbourhoods_geo <- st_read("data/neighbourhoods.geojson", quiet = TRUE)
 ```
 
@@ -51,8 +52,8 @@ neighbourhoods_geo <- st_read("data/neighbourhoods.geojson", quiet = TRUE)
 
 The listings file contains 18 columns. We select the relevant ones and apply these steps:
 
-1. **Price parsing:** Convert `price` to numeric.
-2. **Outlier removal:** Drop listings with price below $5 or above $2,000.
+1. **Price parsing:** Convert `price` to numeric (values are in Turkish Lira, TRY).
+2. **Outlier removal:** Drop listings with price below 50 TRY or above 100,000 TRY.
 3. **NA handling:** Remove rows missing `price`, `neighbourhood`, or `room_type`.
 4. **Date parsing:** Convert `last_review` to date format.
 
@@ -77,8 +78,8 @@ listings <- listings_raw %>%
     !is.na(price),
     !is.na(neighbourhood),
     !is.na(room_type),
-    price >= 5,
-    price <= 2000
+    price >= 50,
+    price <= 100000
   )
 
 cat("Rows after cleaning:", nrow(listings))
