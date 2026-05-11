@@ -41,3 +41,16 @@ Istanbul is one of the world's most-visited cities, and the rise of Airbnb has f
 ---
 
 *Go to [Data](data.qmd) to explore the dataset, or [Analysis](analysis.qmd) for findings and visualisations.*
+---
+
+::: {.callout-note collapse="true"}
+## AI Usage Disclosure
+
+This project utilized Claude AI (Anthropic) to assist with code generation and writing.
+All AI-generated content was reviewed and verified by the team members.
+
+**Prompt used:** *"I am an industrial engineering student working on EMU430 Data Analytics
+final project. Our team BosphorusBytes is analysing Istanbul Airbnb data. Help me create
+Quarto web pages with R code for data import, cleaning, EDA visualizations, time series
+analysis, host profiling, and a Tourism Pressure Index."*
+:::
